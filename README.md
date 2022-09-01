@@ -23,6 +23,9 @@ $ truffle migrate
 3. Run Gate Keeper client
 4. Claim rewards
 
+## What is Gate Keeper?
+- https://whitepaper.gen.foundation/solution/gen-protocol#gate-keeper
+
 ## License
 
 This software is licensed under the Apache 2.0 license.

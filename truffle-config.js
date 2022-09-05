@@ -18,10 +18,11 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 //
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const fs = require('fs');
+const mnemonic = fs.readFileSync(".secret").toString().trim();
+// 0x2A135C7743a2816819cb56a7e7a5E16bD2b7cdFA
 
 module.exports = {
   /**
@@ -43,7 +44,7 @@ module.exports = {
     //
     development: {
      host: "127.0.0.1",     // Localhost (default: none)
-     port: 8545,            // Standard Ethereum port (default: none)
+     port: 9545,            // Standard Ethereum port (default: none)
      network_id: "*",       // Any network (default: none)
     },
     // Another network with more advanced options...
@@ -65,12 +66,12 @@ module.exports = {
     // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
     // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
-    // Useful for private networks
-    // private: {
-    // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
-    // network_id: 2111,   // This network is yours, in the cloud.
-    // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
+    generation: {
+      // host: "http://43.200.43.76",
+      provider: () => new HDWalletProvider(mnemonic, `http://43.200.43.76:8545`),
+      network_id: 8002,
+      // production: true    // Treats this network as if it was a public net. (default: false)
+    }
   },
 
   // Set default mocha options here, use special reporters etc.

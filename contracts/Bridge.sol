@@ -126,11 +126,20 @@ contract Bridge {
     // keyA => mapping(keyB => value)
     mapping(bytes32 => mapping(address => bool)) public reportKeyMap;
     // keyA push
-    bytes32[] reportedTxhash;
+    bytes32[] public reportedTxhash;
     // master gate keeper 가 trnasfer 처리한 txhash
     mapping(bytes32 => bool) public completedKeyMap;
-    // bytes32[] completedTxhash;
+    // uint256 public completedReportedIndex;
 
+    bytes32[] public remainedTxhash;
+    mapping(bytes32 => bool) public reportedTxhashKeyMap;
+    mapping(bytes32 => uint256) public reportedTxhashIndexMap;
+
+    function getRemainedTxhashLength() public view returns (uint256) {
+        return remainedTxhash.length;
+    }
+    
+    // 추후 isManager 삭제
     function createReport(
         bytes32 _txhash,
         address _userAddress,
@@ -139,13 +148,18 @@ contract Bridge {
         address _fromTokenAddress,
         string memory _toChain,
         address _toTokenAddress
-    ) public {
+    ) public isManager {
         require(gateKeeperMap[msg.sender].valid, "The Gate Keeper Not found");
 
         require(!(reportKeyMap[_txhash])[msg.sender], "Only one time call is allowed by each Gate Keeper");
         (reportKeyMap[_txhash])[msg.sender] = true;
-
-        reportedTxhash.push(_txhash);
+        
+        // 기존에 없던 txhash 만 push
+        if (!reportedTxhashKeyMap[_txhash]) {
+            reportedTxhash.push(_txhash);
+            remainedTxhash.push(_txhash);
+            reportedTxhashKeyMap[_txhash] = true;
+        }
 
         reportMap[_txhash].push(
             Report (
@@ -160,7 +174,11 @@ contract Bridge {
         );
     }
 
-    function getLatestReport() public view returns (uint256) {
+    function getReportMapLength(bytes32 _txhash) public view returns (uint256) {
+        return reportMap[_txhash].length;
+    }
+
+    function getLastReportIndex() public view returns (uint256) {
         return reportedTxhash.length - 1;
     }
 
@@ -168,7 +186,14 @@ contract Bridge {
         require(!completedKeyMap[_txhash], "Only one time call is allowed for txhash");
         completedKeyMap[_txhash] = true;
 
-        emit BridgeTransfer(
+        bytes32[] memory _remainedTxhash = remainedTxhash;
+        for (uint256 i = 0; i < _remainedTxhash.length; i++) {
+            if (remainedTxhash[i] == _txhash) {
+                delete remainedTxhash[i];
+            }
+        }
+
+        emit CompleteReport(
             (reportMap[_txhash])[0].userAddress,
             (reportMap[_txhash])[0].lockAmount,
             (reportMap[_txhash])[0].fromChain,
@@ -183,7 +208,7 @@ contract Bridge {
         return completedKeyMap[_txhash];
     }
 
-    event BridgeTransfer(
+    event CompleteReport(
         address indexed userAddress,
         uint256 lockAmount,
         string fromChain,
